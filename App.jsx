@@ -109,7 +109,7 @@ class App extends React.Component {
                     />
                 ) ) }
                 </div>
-            <button className="tasks__add-new-task-button" onClick={ this.addNewTask }>Add new</button>
+                <button className="tasks__add-new-task-button" onClick={ this.addNewTask }>Add new</button>
             </div>
         )
     }
