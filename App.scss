@@ -1,0 +1,61 @@
+html, body, #app {
+    margin: 0;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f3f3f3;
+
+    color: #333333;
+}
+
+input {
+    box-sizing: border-box;
+}
+
+.tasks {
+    margin: auto;
+    height: 100vh;
+    max-width: 400px;
+
+    display: flex;
+    flex-direction: column;
+
+    &__titles {
+        text-align: center;
+    }
+
+    &__list {
+        flex: 1;
+        overflow: auto;
+    }
+
+    &__add-new-task-button {
+        display: block;
+        margin: 0 auto 16px auto;
+    }
+}
+
+.task {
+    &_active {
+        background-color: lemonchiffon;
+    }
+    input {
+        width: 100%;
+        margin-bottom: 4px;
+    }
+
+    &__panel {
+        display: flex;
+
+    }
+
+    &__time {
+        flex: 1;
+    }
+    &_active &__time {
+        font-weight: bold;
+    }
+
+    margin: 16px 0;
+}
