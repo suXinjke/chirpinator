@@ -2,13 +2,13 @@
 
 Very simple task/time tracker I made to suit my requirements and because I couldn't find existing lightweight and simple solution.
 
-The application is very barebones and no real UX was considered, but atleast it preserves the state in localStorage.
-
 [Hosted on suxin.space](https://suxin.space/chirpinator/)
 
 Tech used: [**React**](https://reactjs.org/) and [**Parcel**](https://parceljs.org/)
 
-![CHIRPINATOR](https://i.imgur.com/Khly1D8.png)
+[Pic of first version for historic purposes](https://i.imgur.com/Khly1D8.png)
+
+![CHIRPINATOR](https://i.imgur.com/1jyv63B.png)
 
 ### `npm start`
 
