@@ -1,6 +1,8 @@
 import React from 'react'
 import { hot } from 'react-hot-loader'
 
+import './fonts/fonts.css'
+import './icons/css/fontello.css'
 import './App.scss'
 
 function formatNumberTime(timeInSeconds = 0) {
@@ -11,26 +13,52 @@ function formatNumberTime(timeInSeconds = 0) {
     return `${hours}:${minutes}:${seconds}`
 }
 
-const Task = ( { title, seconds, active, onTitleChange, onStart, onPause, onRemove } ) => (
-    <div className={`task ${active ? 'task_active' : ''}`}>
-        <input className="task__input" value={title} onChange={ e => onTitleChange( e.target.value ) }/>
-        <div className="task__panel">
-            <span className="task__time">{ formatNumberTime( seconds ) }</span>
-            <button onClick={ () => {
-                active ? onPause() : onStart()
-            } }
-            >{ active ? 'Pause' : 'Run' }</button>
-
-            <button onClick={ onRemove }
-            >Remove</button>
-        </div>
+const Timer = ( {
+    className = '',
+    timeString,
+    canPlay,
+    canRemove,
+    big,
+    active,
+    onPlay,
+    onPause,
+    onRemove
+} ) => (
+    <div className={`timer ${className} ${active ? 'timer_active' : ''} ${big ? 'timer_big' : ''}`.trim()}>
+        <div className="timer__time">{ timeString }</div>
+    { canRemove &&
+        <button
+            className="timer__control-button"
+            title="Remove task"
+            onClick={ onRemove }
+        >
+            <i className="icon-cancel"/>
+        </button>
+    }
+    { canPlay &&
+        <button
+            className="timer__control-button"
+            title={ active ? 'Pause' : 'Play' }
+            onClick={ active ? onPause : onPlay }
+        >
+            <i className={ active ? 'icon-pause' : 'icon-play' }/>
+        </button>
+    }
     </div>
 )
+
+const PAGE = {
+    CHIRPINATOR: 'CHIRPINATOR',
+    EXPORT: 'EXPORT',
+    SETTINGS: 'SETTINGS'
+}
 
 const defaultState = {
     idCounter: 1,
     activeTaskId: null,
-    tasks: []
+    lastActiveTaskId: null,
+    tasks: [],
+    activePage: PAGE.CHIRPINATOR
 }
 
 class App extends React.Component {
@@ -38,8 +66,14 @@ class App extends React.Component {
     constructor( props ) {
         super( props )
 
+        this.lastTaskRef = React.createRef()
+        this.taskListRef = React.createRef()
+
         const preservedState = localStorage.getItem( 'chirpinatorState' )
-        this.state = preservedState ? JSON.parse( preservedState ) : defaultState
+        this.state = {
+            ...defaultState,
+            ...(preservedState ? JSON.parse( preservedState ) : {})
+        }
     }
 
     componentDidMount() {
@@ -67,51 +101,122 @@ class App extends React.Component {
                 seconds: 0
             } ),
             idCounter: idCounter + 1
-        } )
+        }, () => {
+            const { scrollHeight, clientHeight } = this.taskListRef.current;
+            this.taskListRef.current.scrollTop = scrollHeight - clientHeight;
+            this.lastTaskRef.current.focus()
+        }  )
     }
 
     render() {
-        const { tasks, activeTaskId } = this.state
+        const { tasks, activeTaskId, lastActiveTaskId, activePage } = this.state
 
         const totalSeconds = tasks.reduce( ( prev, task ) => prev + task.seconds, 0 )
+        const lastActiveTask = tasks.find( task => task.id === lastActiveTaskId )
 
-        return (
-            <div className="tasks">
-                <div className="tasks__titles">
-                    <h1>CHIRPINATOR</h1>
-                    <h3>Overall time</h3>
-                    <h2>{ formatNumberTime( totalSeconds ) }</h2>
+        return (<React.Fragment>
+            <div className="nav">
+                {/* <div
+                    className={`nav__link${activePage === PAGE.EXPORT ? ' nav__link_active' : ''}`}
+                    onClick={ () => { this.setState( { activePage: PAGE.EXPORT } ) } }
+                >
+                    EXPORT
+                </div> */}
+                <div
+                    className={`nav__link${activePage === PAGE.CHIRPINATOR ? ' nav__link_active' : ''}`}
+                    onClick={ () => { this.setState( { activePage: PAGE.CHIRPINATOR } ) } }
+                >
+                    CHIRPINATOR
                 </div>
-                <div className="tasks__list">
-                { tasks.map( ( { id, title, seconds }, index ) => (
-                    <Task
-                        key={id}
-                        title={title}
-                        seconds={seconds}
-                        active={activeTaskId === id}
-                        onTitleChange={ (title) => {
-                            this.setState( {
-                                tasks: tasks.map( ( task, taskIndex ) => index !== taskIndex ? task : { ...task, title } )
-                            } )
-                        } }
-                        onStart={ () => {
-                            this.setState( { activeTaskId: id } )
+                {/* <div
+                    className={`nav__link${activePage === PAGE.SETTINGS ? ' nav__link_active' : ''}`}
+                    onClick={ () => { this.setState( { activePage: PAGE.SETTINGS } ) } }
+                >
+                    SETTINGS
+                </div> */}
+            </div>
+        { activePage === PAGE.CHIRPINATOR &&
+            <div className="tasks page">
+                <div className="tasks__tasks-header tasks-header">
+                    <div className="tasks-header__overall">Overall time</div>
+                    <Timer
+                        big
+                        timeString={ formatNumberTime( totalSeconds ) }
+                        active={activeTaskId === lastActiveTaskId}
+                        canPlay={lastActiveTask}
+                        onPlay={ () => {
+                            this.setState( { activeTaskId: lastActiveTaskId } )
                         } }
                         onPause={ () => {
                             this.setState( { activeTaskId: null } )
                         } }
-                        onRemove={ () => {
-                            this.setState( {
-                                activeTaskId: activeTaskId === id ? null : activeTaskId,
-                                tasks: tasks.filter( ( _, taskIndex ) => index !== taskIndex )
-                            } )
-                        } }
                     />
+                    <div className="tasks-header__active-task">
+                        { !lastActiveTask ? 'No task selected' :
+                        !lastActiveTask.title ? 'Untitled task' :
+                        lastActiveTask.title }
+                    </div>
+                </div>
+                <div className="tasks__list" ref={this.taskListRef}>
+                { tasks.map( ( { id, title, seconds }, index ) => (
+                    <div key={id} className={`task${id === activeTaskId ? ' task_active' : ''}`}>
+                        <input
+                            className="task__input"
+                            placeholder="Enter the name of task..."
+                            value={title}
+                            ref={index === tasks.length - 1 ? this.lastTaskRef : null}
+                            onChange={ e => {
+                                const title = e.target.value
+                                this.setState( {
+                                    tasks: tasks.map( ( task, taskIndex ) => index !== taskIndex ? task : { ...task, title } )
+                                } )
+                            } }
+                        />
+                        <Timer
+                            className='task__timer'
+                            timeString={formatNumberTime(seconds)}
+                            active={activeTaskId === id}
+                            canPlay
+                            canRemove
+                            active={activeTaskId === id}
+                            onPlay={ () => {
+                                this.setState( { activeTaskId: id, lastActiveTaskId: id } )
+                            } }
+                            onPause={ () => {
+                                this.setState( { activeTaskId: null } )
+                            } }
+                            onRemove={ () => {
+                                this.setState( {
+                                    activeTaskId: activeTaskId === id ? null : activeTaskId,
+                                    tasks: tasks.filter( ( _, taskIndex ) => index !== taskIndex )
+                                } )
+                            } }
+                        />
+                    </div>
                 ) ) }
                 </div>
                 <button className="tasks__add-new-task-button" onClick={ this.addNewTask }>Add new</button>
             </div>
-        )
+        }
+        { activePage === PAGE.EXPORT &&
+            <div className="export page">
+                <div className="export__content">
+                    <h2>Coming soon</h2>
+                </div>
+            </div>
+        }
+        { activePage === PAGE.SETTINGS &&
+            <div className="settings page">
+                <div className="settings__content">
+                    <h2>Coming soon</h2>
+                </div>
+
+                <h4 className="settings__about">
+                    <a href="https://suxin.space">suxin.space</a> | <a href="https://github.com/suXinjke/chirpinator">GitHub</a>
+                </h4>
+            </div>
+        }
+        </React.Fragment>)
     }
 }
 
