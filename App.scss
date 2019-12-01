@@ -34,11 +34,14 @@ html, body {
     margin: 0;
 }
 
+html, body, #app {
+    height: 100%;
+}
+
 #app {
     display: flex;
     flex-direction: column;
     margin: auto;
-    height: 100vh;
     max-width: 400px;
 
     .page {
