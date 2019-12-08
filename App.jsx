@@ -158,7 +158,7 @@ class App extends React.Component {
         switch ( exportFormat ) {
             case EXPORT_FORMAT.CSV: {
                 return tasks.map( ( { title, seconds } ) =>
-                    `${title}|${seconds}|${formatNumberTime( seconds, timeFormat )}`
+                    `${title.replace( /\|/g, '' )}|${seconds}|${formatNumberTime( seconds, timeFormat )}`
                 ).join( '\n' )
             }
 
