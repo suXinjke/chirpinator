@@ -84,6 +84,13 @@ const EXPORT_FORMAT = {
     CSV: 'CSV'
 }
 
+const PAGE_WIDTH = {
+    FULL: 'FULL',
+    WIDE: '1000',
+    MEDIUM: '700',
+    SHORT: '400'
+}
+
 const defaultState = {
     idCounter: 1,
     activeTaskId: null,
@@ -92,6 +99,7 @@ const defaultState = {
 
     activePage: PAGE.CHIRPINATOR,
 
+    maxAppWidth: PAGE_WIDTH.SHORT,
     exportFormat: EXPORT_FORMAT.JSON,
     timeFormat: TIME_FORMAT.HH_MM_SS
 }
@@ -174,12 +182,20 @@ class App extends React.Component {
     }
 
     render() {
-        const { tasks, activeTaskId, lastActiveTaskId, timeFormat, exportFormat, activePage } = this.state
+        const {
+            tasks,
+            activeTaskId,
+            lastActiveTaskId,
+            pageWidth,
+            timeFormat,
+            exportFormat,
+            activePage
+        } = this.state
 
         const totalSeconds = tasks.reduce( ( prev, task ) => prev + task.seconds, 0 )
         const lastActiveTask = tasks.find( task => task.id === lastActiveTaskId )
 
-        return (<React.Fragment>
+        return (<div id="chirpinator" style={{ maxWidth: pageWidth === PAGE_WIDTH.FULL ? '100%' : `${pageWidth}px` }}>
             <div className="nav">
                 <div
                     className={`nav__link${activePage === PAGE.EXPORT ? ' nav__link_active' : ''}`}
@@ -315,6 +331,19 @@ class App extends React.Component {
                             <option value={TIME_FORMAT.SS}>Seconds</option>
                         </select>
                     </div>
+                    <div className="setting-row">
+                        <label htmlFor="pageWidth">Max page width</label>
+                        <select
+                            name="pageWidth"
+                            value={ pageWidth }
+                            onChange={ e => this.setState( { pageWidth: e.target.value } ) }
+                        >
+                            <option value={PAGE_WIDTH.FULL}>Full width</option>
+                            <option value={PAGE_WIDTH.WIDE}>Wide (1000px)</option>
+                            <option value={PAGE_WIDTH.MEDIUM}>Medium (700px)</option>
+                            <option value={PAGE_WIDTH.SHORT}>Short (400px)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <h4 className="settings__about">
@@ -322,7 +351,7 @@ class App extends React.Component {
                 </h4>
             </div>
         }
-        </React.Fragment>)
+        </div>)
     }
 }
 
