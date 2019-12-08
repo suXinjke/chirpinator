@@ -57,6 +57,7 @@ html, body, #app {
 .nav {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
 
     &__link {
