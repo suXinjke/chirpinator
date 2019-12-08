@@ -186,7 +186,7 @@ class App extends React.Component {
             tasks,
             activeTaskId,
             lastActiveTaskId,
-            pageWidth,
+            maxAppWidth,
             timeFormat,
             exportFormat,
             activePage
@@ -195,7 +195,7 @@ class App extends React.Component {
         const totalSeconds = tasks.reduce( ( prev, task ) => prev + task.seconds, 0 )
         const lastActiveTask = tasks.find( task => task.id === lastActiveTaskId )
 
-        return (<div id="chirpinator" style={{ maxWidth: pageWidth === PAGE_WIDTH.FULL ? '100%' : `${pageWidth}px` }}>
+        return (<div id="chirpinator" style={{ maxWidth: maxAppWidth === PAGE_WIDTH.FULL ? '100%' : `${maxAppWidth}px` }}>
             <div className="nav">
                 <div
                     className={`nav__link${activePage === PAGE.EXPORT ? ' nav__link_active' : ''}`}
@@ -335,8 +335,8 @@ class App extends React.Component {
                         <label htmlFor="pageWidth">Max page width</label>
                         <select
                             name="pageWidth"
-                            value={ pageWidth }
-                            onChange={ e => this.setState( { pageWidth: e.target.value } ) }
+                            value={ maxAppWidth }
+                            onChange={ e => this.setState( { maxAppWidth: e.target.value } ) }
                         >
                             <option value={PAGE_WIDTH.FULL}>Full width</option>
                             <option value={PAGE_WIDTH.WIDE}>Wide (1000px)</option>
