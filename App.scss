@@ -19,6 +19,10 @@ $color-subtle: #999999;
     font-family: 'Aileron', 'Helvetica', 'Arial', sans-serif;
 }
 
+pre {
+    font-family: "Courier New", Courier, monospace;
+}
+
 input {
     box-sizing: border-box;
     border: 1px solid $color-dark;
@@ -201,15 +205,48 @@ html, body, #app {
     flex-direction: column;
     height: 100%;
 
-    text-align: center;
+    &__content {
+        margin: 1rem 0;
+    }
+}
+
+.export-dialog {
+    display: flex;
+
+    &__content {
+        flex: 1;
+        animation: fade-in 0.2s;
+        padding: 0.5rem;
+        margin: 0 0 0 1rem;
+
+        background-color: $color-gray;
+        overflow: auto;
+    }
+
+    &__options {
+        display: flex;
+        flex-direction: column;
+        flex-basis: 6rem;
+    }
+
+    &__option-button {
+        cursor: pointer;
+        text-decoration: none;
+        color: $color-dark;
+        padding: 0.5rem;
+        font-weight: bold;
+        text-align: center;
+
+        &_active {
+            background-color: $color-primary;
+        }
+    }
 }
 
 .settings {
     display: flex;
     flex-direction: column;
     height: 100%;
-
-    text-align: center;
 
     &__content {
         flex: 1;

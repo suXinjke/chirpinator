@@ -79,6 +79,11 @@ const PAGE = {
     SETTINGS: 'SETTINGS'
 }
 
+const EXPORT_FORMAT = {
+    JSON: 'JSON',
+    CSV: 'CSV'
+}
+
 const defaultState = {
     idCounter: 1,
     activeTaskId: null,
@@ -86,6 +91,8 @@ const defaultState = {
     tasks: [],
 
     activePage: PAGE.CHIRPINATOR,
+
+    exportFormat: EXPORT_FORMAT.JSON,
     timeFormat: TIME_FORMAT.HH_MM_SS
 }
 
@@ -96,6 +103,7 @@ class App extends React.Component {
 
         this.lastTaskRef = React.createRef()
         this.taskListRef = React.createRef()
+        this.exportContentRef = React.createRef()
 
         const preservedState = localStorage.getItem( 'chirpinatorState' )
         this.state = {
@@ -136,20 +144,49 @@ class App extends React.Component {
         }  )
     }
 
+    export = ( exportFormat ) => {
+        const { tasks, timeFormat } = this.state
+
+        switch ( exportFormat ) {
+            case EXPORT_FORMAT.CSV: {
+                return tasks.map( ( { title, seconds } ) =>
+                    `${title}|${seconds}|${formatNumberTime( seconds, timeFormat )}`
+                ).join( '\n' )
+            }
+
+            case EXPORT_FORMAT.JSON:
+            default: {
+                const totalSeconds = tasks.reduce( ( prev, task ) => prev + task.seconds, 0 )
+                const formattedTasks = tasks.map( ( { title, seconds } ) => ( {
+                    title,
+                    seconds,
+                    secondsFormatted: formatNumberTime( seconds, timeFormat )
+                } ) )
+                return JSON.stringify( {
+                    tasks: formattedTasks,
+                    overall: {
+                        seconds: totalSeconds,
+                        totalSeconds: formatNumberTime( totalSeconds, timeFormat )
+                    }
+                }, null, 2 )
+            }
+        }
+    }
+
     render() {
-        const { tasks, activeTaskId, lastActiveTaskId, timeFormat, activePage } = this.state
+        const { tasks, activeTaskId, lastActiveTaskId, timeFormat, exportFormat, activePage } = this.state
 
         const totalSeconds = tasks.reduce( ( prev, task ) => prev + task.seconds, 0 )
         const lastActiveTask = tasks.find( task => task.id === lastActiveTaskId )
 
         return (<React.Fragment>
             <div className="nav">
-                {/* <div
+                <div
                     className={`nav__link${activePage === PAGE.EXPORT ? ' nav__link_active' : ''}`}
                     onClick={ () => { this.setState( { activePage: PAGE.EXPORT } ) } }
                 >
                     EXPORT
-                </div> */}
+                </div>
                 <div
                     className={`nav__link${activePage === PAGE.CHIRPINATOR ? ' nav__link_active' : ''}`}
                     onClick={ () => { this.setState( { activePage: PAGE.CHIRPINATOR } ) } }
@@ -229,7 +266,36 @@ class App extends React.Component {
         { activePage === PAGE.EXPORT &&
             <div className="export page">
                 <div className="export__content">
-                    <h2>Coming soon</h2>
+                    <div className="export-dialog">
+                        <div className="export-dialog__options">
+                            <div
+                                className={`export-dialog__option-button${exportFormat === EXPORT_FORMAT.JSON ? ' export-dialog__option-button_active' : ''}`}
+                                onClick={ () => this.setState( { exportFormat: EXPORT_FORMAT.JSON } ) }
+                            >
+                                JSON
+                            </div>
+                            <div
+                                className={`export-dialog__option-button${exportFormat === EXPORT_FORMAT.CSV ? ' export-dialog__option-button_active' : ''}`}
+                                onClick={ () => this.setState( { exportFormat: EXPORT_FORMAT.CSV } ) }
+                            >
+                                CSV
+                            </div>
+                        </div>
+                        <pre
+                            key={ exportFormat }
+                            className="export-dialog__content"
+                            ref={ this.exportContentRef }
+                            onClick={ () => {
+                                const selection = window.getSelection()
+                                const range = document.createRange()
+                                range.selectNodeContents( this.exportContentRef.current )
+                                selection.removeAllRanges()
+                                selection.addRange( range )
+                            } }
+                        >
+                            { this.export( exportFormat ) }
+                        </pre>
+                    </div>
                 </div>
             </div>
         }
