@@ -213,9 +213,19 @@ html, body, #app {
 
     &__content {
         flex: 1;
+        margin: 1rem 0;
     }
 
     &__about {
         text-align: center;
+    }
+}
+
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+
+    label {
+        font-weight: bold;
     }
 }

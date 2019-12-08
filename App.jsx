@@ -5,12 +5,38 @@ import './fonts/fonts.css'
 import './icons/css/fontello.css'
 import './App.scss'
 
-function formatNumberTime(timeInSeconds = 0) {
-    const hours     = Math.floor( timeInSeconds / 3600 ).toString().padStart( 2, "0" )
-    const minutes   = Math.floor( ( timeInSeconds / 60 ) % 60 ).toString().padStart( 2, "0" )
-    const seconds   = Math.floor( timeInSeconds % 60 ).toString().padStart( 2, "0" )
+const TIME_FORMAT = {
+    HH_MM_SS: 'HH_MM_SS',
+    MM_SS: 'MM_SS',
+    H_MM: 'H_MM',
+    SS: 'SS'
+}
 
-    return `${hours}:${minutes}:${seconds}`
+function formatNumberTime( timeInSeconds = 0, timeFormat = TIME_FORMAT.HH_MM_SS ) {
+    if ( timeFormat === TIME_FORMAT.SS ) {
+        return `${timeInSeconds} sec.`
+    }
+
+    const hours   = Math.floor( timeInSeconds / 3600 )
+    const minutes = Math.floor( ( timeInSeconds / 60 ) % 60 )
+    const seconds = Math.floor( timeInSeconds % 60 )
+
+    switch ( timeFormat ) {
+        case TIME_FORMAT.H_MM:
+            const hourFraction = ( minutes + ( seconds / 60 ) ) / 60
+            return `${(hours+hourFraction).toFixed( 2 )} hrs.`
+        case TIME_FORMAT.MM_SS: {
+            const paddedSeconds = seconds.toString().padStart( 2, "0" )
+            return `${hours * 60 + minutes}:${paddedSeconds}`
+        }
+        case TIME_FORMAT.HH_MM_SS:
+        default: {
+            const paddedHours   = hours.toString().padStart( 2, "0" )
+            const paddedMinutes = minutes.toString().padStart( 2, "0" )
+            const paddedSeconds = seconds.toString().padStart( 2, "0" )
+            return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`
+        }
+    }
 }
 
 const Timer = ( {
@@ -58,7 +84,9 @@ const defaultState = {
     activeTaskId: null,
     lastActiveTaskId: null,
     tasks: [],
-    activePage: PAGE.CHIRPINATOR
+
+    activePage: PAGE.CHIRPINATOR,
+    timeFormat: TIME_FORMAT.HH_MM_SS
 }
 
 class App extends React.Component {
@@ -109,7 +137,7 @@ class App extends React.Component {
     }
 
     render() {
-        const { tasks, activeTaskId, lastActiveTaskId, activePage } = this.state
+        const { tasks, activeTaskId, lastActiveTaskId, timeFormat, activePage } = this.state
 
         const totalSeconds = tasks.reduce( ( prev, task ) => prev + task.seconds, 0 )
         const lastActiveTask = tasks.find( task => task.id === lastActiveTaskId )
@@ -128,12 +156,12 @@ class App extends React.Component {
                 >
                     CHIRPINATOR
                 </div>
-                {/* <div
+                <div
                     className={`nav__link${activePage === PAGE.SETTINGS ? ' nav__link_active' : ''}`}
                     onClick={ () => { this.setState( { activePage: PAGE.SETTINGS } ) } }
                 >
                     SETTINGS
-                </div> */}
+                </div>
             </div>
         { activePage === PAGE.CHIRPINATOR &&
             <div className="tasks page">
@@ -141,7 +169,7 @@ class App extends React.Component {
                     <div className="tasks-header__overall">Overall time</div>
                     <Timer
                         big
-                        timeString={ formatNumberTime( totalSeconds ) }
+                        timeString={ formatNumberTime( totalSeconds, timeFormat ) }
                         active={activeTaskId === lastActiveTaskId}
                         canPlay={lastActiveTask}
                         onPlay={ () => {
@@ -174,7 +202,7 @@ class App extends React.Component {
                         />
                         <Timer
                             className='task__timer'
-                            timeString={formatNumberTime(seconds)}
+                            timeString={formatNumberTime( seconds, timeFormat )}
                             active={activeTaskId === id}
                             canPlay
                             canRemove
@@ -208,7 +236,19 @@ class App extends React.Component {
         { activePage === PAGE.SETTINGS &&
             <div className="settings page">
                 <div className="settings__content">
-                    <h2>Coming soon</h2>
+                    <div className="setting-row">
+                        <label htmlFor="timeFormat">Time format</label>
+                        <select
+                            name="timeFormat"
+                            value={ timeFormat }
+                            onChange={ e => this.setState( { timeFormat: e.target.value } ) }
+                        >
+                            <option value={TIME_FORMAT.HH_MM_SS}>Hours:Minutes:Seconds</option>
+                            <option value={TIME_FORMAT.MM_SS}>Minutes:Seconds</option>
+                            <option value={TIME_FORMAT.H_MM}>Hours.HourFraction</option>
+                            <option value={TIME_FORMAT.SS}>Seconds</option>
+                        </select>
+                    </div>
                 </div>
 
                 <h4 className="settings__about">
