@@ -134,6 +134,19 @@ class App extends React.Component {
                 localStorage.setItem( 'chirpinatorState', JSON.stringify( this.state ) )
             } )
         }, 1000 )
+
+        window.onkeydown = ( e ) => {
+            if ( e.target.tagName !== 'BODY' ) {
+                return
+            }
+
+            const { activeTaskId, lastActiveTaskId } = this.state
+            if ( activeTaskId ) {
+                this.setState( { activeTaskId: null } )
+            } else {
+                this.setState( { activeTaskId: lastActiveTaskId } )
+            }
+        }
     }
 
     addNewTask = () => {
