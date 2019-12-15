@@ -27,11 +27,33 @@ input {
     box-sizing: border-box;
     border: 1px solid $color-dark;
     outline: none;
+
+    .dark & {
+        color: $color-subtle;
+        background-color: $color-subtle;
+
+        &:focus {
+            color: $color-dark;
+        }
+    }
+}
+
+.dark a {
+    color: $color-primary;
+
+    &:visited {
+        color: $color-subtle;
+    }
 }
 
 body {
     color: $color-dark;
     background-color: $color-light;
+
+    &.dark {
+        color: $color-subtle;
+        background-color: $color-dark;
+    }
 }
 
 html, body {
@@ -74,6 +96,13 @@ html, body, #app_container, #chirpinator {
 
         &_expand {
             overflow: hidden;
+        }
+
+        .dark & {
+            color: $color-subtle;
+            &_active {
+                color: $color-dark;
+            }
         }
     }
 }
@@ -122,9 +151,11 @@ html, body, #app_container, #chirpinator {
             font-weight: bold;
             border-color: $color-primary;
         }
+
+        .dark & {
+            color: $color-subtle;
+        }
     }
-
-
 }
 
 .timer {
@@ -144,6 +175,7 @@ html, body, #app_container, #chirpinator {
         background: none;
         border: none;
         font-size: 1.25rem;
+        color: $color-dark;
 
         margin: 0 0.25rem;
 
@@ -154,6 +186,10 @@ html, body, #app_container, #chirpinator {
             outline: 0;
             animation: emphasize 0.2s 1;
             animation-fill-mode: forwards;
+        }
+
+        .dark & {
+            color: $color-subtle;
         }
     }
 
@@ -173,6 +209,15 @@ html, body, #app_container, #chirpinator {
 
     &_active {
         background-color: $color-primary;
+
+        .dark & {
+            color: $color-dark;
+
+            input,
+            .timer__control-button {
+                color: $color-dark;
+            }
+        }
     }
     &__input {
         width: 100%;
@@ -221,6 +266,10 @@ html, body, #app_container, #chirpinator {
         margin: 0 0 0 1rem;
 
         background-color: $color-gray;
+        .dark & {
+            color: $color-dark;
+            background-color: $color-subtle;
+        }
         overflow: auto;
     }
 
@@ -240,6 +289,13 @@ html, body, #app_container, #chirpinator {
 
         &_active {
             background-color: $color-primary;
+        }
+
+        .dark & {
+            color: $color-subtle;
+        }
+        .dark &_active {
+            color: $color-dark;
         }
     }
 }

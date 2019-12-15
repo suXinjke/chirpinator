@@ -101,7 +101,9 @@ const defaultState = {
 
     maxAppWidth: PAGE_WIDTH.SHORT,
     exportFormat: EXPORT_FORMAT.JSON,
-    timeFormat: TIME_FORMAT.HH_MM_SS
+    timeFormat: TIME_FORMAT.HH_MM_SS,
+
+    darkMode: false
 }
 
 class App extends React.Component {
@@ -147,6 +149,8 @@ class App extends React.Component {
                 this.setState( { activeTaskId: lastActiveTaskId } )
             }
         }
+
+        this.setDarkMode( this.state.darkMode )
     }
 
     addNewTask = () => {
@@ -194,6 +198,14 @@ class App extends React.Component {
         }
     }
 
+    setDarkMode = ( enabled ) => {
+        if ( enabled ) {
+            document.body.classList.add( 'dark' )
+        } else {
+            document.body.classList.remove( 'dark' )
+        }
+    }
+
     render() {
         const {
             tasks,
@@ -202,7 +214,8 @@ class App extends React.Component {
             maxAppWidth,
             timeFormat,
             exportFormat,
-            activePage
+            activePage,
+            darkMode
         } = this.state
 
         const totalSeconds = tasks.reduce( ( prev, task ) => prev + task.seconds, 0 )
@@ -362,6 +375,16 @@ class App extends React.Component {
                             <option value={PAGE_WIDTH.MEDIUM}>Medium (700px)</option>
                             <option value={PAGE_WIDTH.SHORT}>Short (400px)</option>
                         </select>
+                    </div>
+                    <div className="setting-row">
+                        <label htmlFor="darkMode">Dark mode</label>
+                        <button onClick={ () => {
+                            this.setState( { darkMode: !darkMode }, () => {
+                                this.setDarkMode( !darkMode )
+                            } )
+                        } }>
+                            { darkMode ? 'ON' : 'OFF' }
+                        </button>
                     </div>
                 </div>
 
