@@ -328,3 +328,11 @@ html, body, #app_container, #chirpinator {
         margin-right: 4rem;
     }
 }
+
+.criticalFailure {
+    margin-top: 1rem;
+    button {
+        width: 100%;
+        padding: 1rem;
+    }
+}

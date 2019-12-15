@@ -76,7 +76,8 @@ const Timer = ( {
 const PAGE = {
     CHIRPINATOR: 'CHIRPINATOR',
     EXPORT: 'EXPORT',
-    SETTINGS: 'SETTINGS'
+    SETTINGS: 'SETTINGS',
+    CRITICAL_FAILURE: 'CRITICAL_FAILURE'
 }
 
 const EXPORT_FORMAT = {
@@ -115,15 +116,30 @@ class App extends React.Component {
         this.taskListRef = React.createRef()
         this.exportContentRef = React.createRef()
 
-        const preservedState = localStorage.getItem( 'chirpinatorState' )
+        let preservedState = {}
+
+        try {
+            preservedState = localStorage.getItem( 'chirpinatorState' )
+            preservedState = JSON.parse( preservedState )
+        } catch ( err ) {
+            console.error( err )
+            preservedState = {
+                activePage: PAGE.CRITICAL_FAILURE
+            }
+        }
+
         this.state = {
             ...defaultState,
-            ...(preservedState ? JSON.parse( preservedState ) : {})
+            ...preservedState
         }
     }
 
     componentDidMount() {
         setInterval( () => {
+            if ( this.state.activePage === PAGE.CRITICAL_FAILURE ) {
+                return
+            }
+
             this.setState( ( { activeTaskId, tasks } ) => {
                 if ( activeTaskId === null ) {
                     return
@@ -222,6 +238,7 @@ class App extends React.Component {
         const lastActiveTask = tasks.find( task => task.id === lastActiveTaskId )
 
         return (<div id="chirpinator" style={{ maxWidth: maxAppWidth === PAGE_WIDTH.FULL ? '100%' : `${maxAppWidth}px` }}>
+        { activePage !== PAGE.CRITICAL_FAILURE &&
             <div className="nav">
                 <div
                     className={`nav__link${activePage === PAGE.EXPORT ? ' nav__link_active' : ''}`}
@@ -242,6 +259,7 @@ class App extends React.Component {
                     SETTINGS
                 </div>
             </div>
+        }
         { activePage === PAGE.CHIRPINATOR &&
             <div className="tasks page">
                 <div className="tasks__tasks-header tasks-header">
@@ -391,6 +409,20 @@ class App extends React.Component {
                 <h4 className="settings__about">
                     <a href="https://suxin.space">suxin.space</a> | <a href="https://github.com/suXinjke/chirpinator">GitHub</a>
                 </h4>
+            </div>
+        }
+        { activePage === PAGE.CRITICAL_FAILURE &&
+            <div className="criticalFailure page">
+                <strong>CHIRPINATOR</strong> failed to load your preserved tasks and data from localStorage.
+                It was probably corrupted.
+
+                <br/>
+                <br/>
+                <button onClick={ () => {
+                    this.setState( { activePage: PAGE.CHIRPINATOR } )
+                } }>
+                    Start fresh
+                </button>
             </div>
         }
         </div>)
