@@ -252,6 +252,12 @@ class App extends React.Component {
                                     tasks: tasks.map( ( task, taskIndex ) => index !== taskIndex ? task : { ...task, title } )
                                 } )
                             } }
+                            onKeyDown={ e => {
+                                if ( e.keyCode === 13 ) {
+                                    this.setState( { activeTaskId: id, lastActiveTaskId: id } )
+                                    e.target.blur()
+                                }
+                            } }
                         />
                         <Timer
                             className='task__timer'
