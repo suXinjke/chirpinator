@@ -158,6 +158,10 @@ class App extends React.Component {
                 return
             }
 
+            if ( e.keyCode !== 32 ) {
+                return
+            }
+
             const { activeTaskId, lastActiveTaskId } = this.state
             if ( activeTaskId ) {
                 this.setState( { activeTaskId: null } )
