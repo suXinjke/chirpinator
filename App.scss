@@ -164,8 +164,11 @@ html, body, #app_container, #chirpinator {
     margin-right: -0.25rem;
 
     &__time {
-        flex: 1;
         font-size: 1.5rem;
+    }
+
+    &__spacer {
+        flex: 1;
     }
 
     &__control-button {

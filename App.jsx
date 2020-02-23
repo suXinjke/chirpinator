@@ -58,6 +58,44 @@ function formatNumberTime( timeInSeconds = 0, timeFormat = TIME_FORMAT.HH_MM_SS 
     }
 }
 
+function timeStringToSeconds( time = '' ) {
+    const timeWithNoText = time
+        .replace( /[^\d]+$/g, '' )
+        .replace( /[^\d.:]/g, '' )
+
+    const timeParts = timeWithNoText.split( ':' ).map( Number )
+
+    if ( timeParts.length === 0 ) {
+        return 0
+    }
+
+    if ( timeParts.length === 1 ) {
+        let seconds = timeParts[0]
+
+        if ( time.toLowerCase().includes( 'h' ) ) {
+            seconds *= 60 * 60
+        } else if ( time.toLowerCase().includes( 'm' ) ) {
+            seconds *= 60
+        }
+
+        return Math.round( seconds )
+    }
+
+    const seconds = timeParts.reverse().reduce( ( seconds, timePart, index ) => {
+        if ( index === 2 ) {
+            return seconds + timePart * 60 * 60
+        }
+
+        if ( index === 1 ) {
+            return seconds + timePart * 60
+        }
+
+        return seconds + timePart
+    }, 0 )
+
+    return Math.round( seconds )
+}
+
 const Timer = ( {
     className = '',
     timeString,
@@ -67,30 +105,105 @@ const Timer = ( {
     active,
     onPlay,
     onPause,
-    onRemove
-} ) => (
-    <div className={ `timer ${className} ${active ? 'timer_active' : ''} ${big ? 'timer_big' : ''}`.trim() }>
-        <div className="timer__time">{ timeString }</div>
-    { canRemove &&
-        <button
-            className="timer__control-button"
-            title="Remove task"
-            onClick={ onRemove }
-        >
-            <i className="icon-cancel"/>
-        </button>
-    }
-    { canPlay &&
-        <button
-            className="timer__control-button"
-            title={ active ? 'Pause' : 'Play' }
-            onClick={ active ? onPause : onPlay }
-        >
-            <i className={ active ? 'icon-pause' : 'icon-play' }/>
-        </button>
-    }
-    </div>
-)
+    onRemove,
+    onTimeStringChange
+} ) => {
+    const [editableTimeString, setEditableTimeString] = useState( null )
+    const [editMode, setEditMode] = useState( false )
+    const inputRef = useRef( null )
+
+    const startEditing = useCallback( () => {
+        if ( onTimeStringChange ) {
+            setEditableTimeString( timeString )
+            setEditMode( true )
+        }
+    }, [onTimeStringChange] )
+
+    const finishEditiing = useCallback( () => {
+        if ( onTimeStringChange ) {
+            onTimeStringChange( editableTimeString )
+        }
+
+        setEditMode( false )
+    }, [editableTimeString] )
+
+    useEffect( function handleEscapeHotkey() {
+        if ( !editMode ) {
+            return
+        }
+
+        const eventHandler = e => {
+            if ( e.keyCode !== 27 ) {
+                return
+            }
+
+            setEditMode( false )
+        }
+
+        window.addEventListener( 'keydown', eventHandler )
+        return () => window.removeEventListener( 'keydown', eventHandler )
+    }, [editMode] )
+
+    useEffect( function focusWhenEditing () {
+        if ( editMode && inputRef.current ) {
+            inputRef.current.focus()
+        }
+    }, [editMode] )
+
+    return (
+        <div className={ `timer ${className} ${active ? 'timer_active' : ''} ${big ? 'timer_big' : ''}`.trim() }>
+        { !editMode &&
+            <div
+                className="timer__time"
+                onDoubleClick={ startEditing }
+            >
+                { timeString }
+            </div>
+        }
+        { editMode &&
+            <input
+                className="timer__time"
+                value={ editableTimeString }
+                ref={ inputRef }
+                onChange={ e => setEditableTimeString( e.target.value ) }
+                onBlur={ finishEditiing }
+                onKeyDown={ e => e.keyCode === 13 && finishEditiing() }
+            />
+        }
+
+        { ( onTimeStringChange && !editMode ) &&
+            <button
+                className="timer__control-button timer__edit-time-button"
+                title="Edit time"
+                onClick={ startEditing }
+            >
+                <i className="icon-pencil"/>
+            </button>
+        }
+
+            <div className="timer__spacer"/>
+
+        { canRemove &&
+            <button
+                className="timer__control-button"
+                title="Remove task"
+                onClick={ onRemove }
+            >
+                <i className="icon-cancel"/>
+            </button>
+        }
+        { canPlay &&
+            <button
+                className="timer__control-button"
+                title={ active ? 'Pause' : 'Play' }
+                onClick={ active ? onPause : onPlay }
+            >
+                <i className={ active ? 'icon-pause' : 'icon-play' }/>
+            </button>
+        }
+        </div>
+    )
+}
 
 function getExportData( { tasks, timeFormat, exportFormat } ) {
     switch ( exportFormat ) {
@@ -348,6 +461,11 @@ function ChirpinatorApp() {
                                 setState( {
                                     activeTaskId: activeTaskId === id ? null : activeTaskId,
                                     tasks: tasks.filter( ( _, taskIndex ) => index !== taskIndex )
+                                } )
+                            } }
+                            onTimeStringChange={ timeString => {
+                                setState( {
+                                    tasks: tasks.map( ( task ) => task.id !== id ? task : { ...task, seconds: timeStringToSeconds( timeString ) } )
                                 } )
                             } }
                         />
