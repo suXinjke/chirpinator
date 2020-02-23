@@ -204,6 +204,7 @@ function ChirpinatorApp() {
         }
     }, [chirpinatorTasks] )
 
+
     useEffect( function focusOnTaskIfRequired() {
         if ( !focusedTaskRef.current ) {
             return
@@ -214,10 +215,22 @@ function ChirpinatorApp() {
         focusedTaskRef.current.focus()
 
         setTaskIdToFocusOn( null )
-    }, [tasks] )
+    }, [taskIdToFocusOn] )
+
+    const addNewTask = useCallback( () => {
+        setState( {
+            tasks: tasks.concat( {
+                id: idCounter,
+                title: '',
+                seconds: 0
+            } )
+        } )
+        setTaskIdToFocusOn( idCounter )
+        setIdCounter( idCounter + 1 )
+    }, [chirpinatorTasks, idCounter] )
 
     useEffect( function handlePauseHotkey() {
-        window.onkeydown = e => {
+        const eventHandler = e => {
             if ( e.target.tagName !== 'BODY' ) {
                 return
             }
@@ -227,10 +240,29 @@ function ChirpinatorApp() {
             }
 
             setState( { activeTaskId: activeTaskId ? null : lastActiveTaskId } )
+        }
+
+        window.addEventListener( 'keydown', eventHandler )
+        return () => window.removeEventListener( 'keydown', eventHandler )
+    }, [setState] )
+
+    useEffect( function handleAddTaskHotkey() {
+        const eventHandler = e => {
+            if ( e.target.tagName !== 'BODY' ) {
+                return
+            }
+
+            if ( e.keyCode !== 73 ) {
+                return
+            }
 
             e.preventDefault()
+            addNewTask()
         }
-    }, [chirpinatorTasks] )
+
+        window.addEventListener( 'keydown', eventHandler )
+        return () => window.removeEventListener( 'keydown', eventHandler )
+    }, [addNewTask] )
 
     const totalSeconds = tasks.reduce( ( prev, task ) => prev + task.seconds, 0 )
     const lastActiveTask = tasks.find( task => task.id === lastActiveTaskId )
@@ -324,17 +356,7 @@ function ChirpinatorApp() {
                 </div>
                 <button
                     className="tasks__add-new-task-button"
-                    onClick={ () => {
-                        setState( {
-                            tasks: tasks.concat( {
-                                id: idCounter,
-                                title: '',
-                                seconds: 0
-                            } )
-                        } )
-                        setIdCounter( idCounter + 1 )
-                        setTaskIdToFocusOn( idCounter )
-                    } }
+                    onClick={ addNewTask }
                 >
                     Add new
                 </button>
