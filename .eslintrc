@@ -15,6 +15,7 @@
         "quotes": ["error", "single"],
         "space-in-parens": ["error", "always"],
         "jsx-quotes": ["error", "prefer-double"],
+        "no-console": ["error", { "allow": ["error"] }],
 
         "react/jsx-curly-spacing": ["error", "always"],
         "react/prop-types": "off"
