@@ -280,13 +280,16 @@ function useDarkMode( darkMode ) {
 }
 
 function ChirpinatorApp() {
-    const [{ maxAppWidth, exportFormat, timeFormat, darkMode }, setSettings] = usePersistentObjectState( 'chirpinator_settings', {
+    const [chirpinatorSettings, setSettings] = usePersistentObjectState( 'chirpinator_settings', {
         maxAppWidth: PAGE_WIDTH.SHORT,
         exportFormat: EXPORT_FORMAT.JSON,
         timeFormat: TIME_FORMAT.HH_MM_SS,
 
-        darkMode: false
+        darkMode: false,
+        dynamicTitle: true,
+        dynamicTitleTimer: true
     } )
+    const { maxAppWidth, exportFormat, timeFormat, darkMode, dynamicTitle, dynamicTitleTimer } = chirpinatorSettings
     useDarkMode( darkMode )
 
     const [chirpinatorTasks, setState, tasksGotCorrupted, clearTasksInLocalStorage] = usePersistentObjectState( 'chirpinator_tasks', {
@@ -379,6 +382,25 @@ function ChirpinatorApp() {
 
     const totalSeconds = tasks.reduce( ( prev, task ) => prev + task.seconds, 0 )
     const lastActiveTask = tasks.find( task => task.id === lastActiveTaskId )
+    const activeTask = tasks.find( task => task.id === activeTaskId )
+
+    useEffect( function setDynamicTitle() {
+        const titlePortions = [ 'CHIRPINATOR' ]
+
+        if ( dynamicTitle ) {
+            if ( !activeTask ) {
+                titlePortions.unshift( 'No active task' )
+            } else {
+                titlePortions.unshift( activeTask.title || 'Untitled task' )
+            }
+        }
+
+        if ( dynamicTitleTimer && activeTask ) {
+            titlePortions.unshift( formatNumberTime( activeTask.seconds, timeFormat ) )
+        }
+
+        document.title = titlePortions.join( ' - ' )
+    }, [dynamicTitle, dynamicTitleTimer, timeFormat, activeTask] )
 
     const [activePage, setActivePage] = useState( tasksGotCorrupted ? PAGE.CRITICAL_FAILURE : PAGE.CHIRPINATOR )
 
@@ -544,6 +566,18 @@ function ChirpinatorApp() {
                             <option value={ PAGE_WIDTH.MEDIUM }>Medium (700px)</option>
                             <option value={ PAGE_WIDTH.SHORT }>Short (400px)</option>
                         </select>
+                    </div>
+                    <div className="setting-row">
+                        <label htmlFor="dynamicTitle">Show current task name in the title</label>
+                        <button id="dynamicTitle" onClick={ () => setSettings( { dynamicTitle: !dynamicTitle } ) }>
+                            { dynamicTitle ? 'ON' : 'OFF' }
+                        </button>
+                    </div>
+                    <div className="setting-row">
+                        <label htmlFor="dynamicTitleTimer">Show current task time in the title</label>
+                        <button id="dynamicTitleTimer" onClick={ () => setSettings( { dynamicTitleTimer: !dynamicTitleTimer } ) }>
+                            { dynamicTitleTimer ? 'ON' : 'OFF' }
+                        </button>
                     </div>
                     <div className="setting-row">
                         <label htmlFor="darkMode">Dark mode</label>
