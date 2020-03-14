@@ -622,11 +622,26 @@ function ChirpinatorApp() {
                             { darkMode ? 'ON' : 'OFF' }
                         </button>
                     </div>
+                    <div className="setting-row">
+                        <label htmlFor="hotkeys">Hotkeys</label>
+                        <div>
+                            <div>I - add new task</div>
+                            <div>Space - pause/resume current task</div>
+                        </div>
+                    </div>
                 </div>
 
-                <h4 className="settings__about">
-                    <a href="https://suxin.space">suxin.space</a> | <a href="https://github.com/suXinjke/chirpinator">GitHub</a>
-                </h4>
+                <div className="settings__about">
+                    <p>
+                        I made this app out of frustration.
+                        Other online solutions require to sign up
+                        and offer way too many features, while <strong>Chirpinator </strong>
+                        just allows you to focus on time spent today and nothing else.
+                    </p>
+                    <h4 style={ { textAlign: 'right' } }>
+                        <a href="https://suxin.space">suxin.space</a> | <a href="https://github.com/suXinjke/chirpinator">GitHub</a>
+                    </h4>
+                </div>
             </div>
         }
         { activePage === PAGE.CRITICAL_FAILURE &&
