@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 
 import './fonts/fonts.css'
 import './icons/css/fontello.css'
@@ -404,6 +405,22 @@ function ChirpinatorApp() {
 
     const [activePage, setActivePage] = useState( tasksGotCorrupted ? PAGE.CRITICAL_FAILURE : PAGE.CHIRPINATOR )
 
+    const handleDragEnd = ( e ) => {
+        if ( !e.destination ) {
+          return
+        }
+
+        if ( e.destination.index === e.source.index ) {
+          return
+        }
+
+        const reorderedTasks = [ ...tasks ]
+        const [ removedTask ] = reorderedTasks.splice( e.source.index, 1 )
+        reorderedTasks.splice( e.destination.index, 0, removedTask )
+
+        setState( { tasks: reorderedTasks } )
+    }
+
     return (
         <div id="chirpinator" style={ { maxWidth: maxAppWidth === PAGE_WIDTH.FULL ? '100%' : `${maxAppWidth}px` } }>
         { activePage !== PAGE.CRITICAL_FAILURE &&
@@ -446,54 +463,74 @@ function ChirpinatorApp() {
                         lastActiveTask.title }
                     </div>
                 </div>
-                <div className="tasks__list" ref={ taskListRef }>
-                { tasks.map( ( { id, title, seconds }, index ) => (
-                    <div key={ id } className={ `task${id === activeTaskId ? ' task_active' : ''}` }>
-                        <input
-                            className="task__input"
-                            placeholder="Enter the name of task..."
-                            value={ title }
-                            ref={ id === taskIdToFocusOn ? focusedTaskRef : null }
-                            onChange={ e => {
-                                const title = e.target.value
-                                setState( {
-                                    tasks: tasks.map( ( task, taskIndex ) => index !== taskIndex ? task : { ...task, title } )
-                                } )
-                            } }
-                            onKeyDown={ e => {
-                                if ( e.keyCode === 13 ) {
-                                    setState( { activeTaskId: id, lastActiveTaskId: id } )
-                                    e.target.blur()
-                                }
-                            } }
-                        />
-                        <Timer
-                            className="task__timer"
-                            timeString={ formatNumberTime( seconds, timeFormat ) }
-                            active={ activeTaskId === id }
-                            canPlay
-                            canRemove
-                            onPlay={ () => {
-                                setState( { activeTaskId: id, lastActiveTaskId: id } )
-                            } }
-                            onPause={ () => {
-                                setState( { activeTaskId: null } )
-                            } }
-                            onRemove={ () => {
-                                setState( {
-                                    activeTaskId: activeTaskId === id ? null : activeTaskId,
-                                    tasks: tasks.filter( ( _, taskIndex ) => index !== taskIndex )
-                                } )
-                            } }
-                            onTimeStringChange={ timeString => {
-                                setState( {
-                                    tasks: tasks.map( ( task ) => task.id !== id ? task : { ...task, seconds: timeStringToSeconds( timeString ) } )
-                                } )
-                            } }
-                        />
+                <div className="tasks__list" ref={ taskListRef }><DragDropContext onDragEnd={ handleDragEnd }><Droppable droppableId="tasks__list">
+                { provided => (
+                    <div ref={ provided.innerRef } { ...provided.droppableProps }>
+                        { tasks.map( ( { id, title, seconds }, index ) => (
+                            <Draggable key={ id } draggableId={ String( id ) } index={ index }>
+                            { ( provided, snapshot ) => (
+                                <div
+                                    className={ `task${id === activeTaskId ? ' task_active' : ''}` }
+                                    ref={ provided.innerRef }
+                                    { ...provided.draggableProps }
+                                    style={ !snapshot.isDropAnimating ?
+                                        provided.draggableProps.style :
+                                        { ...provided.draggableProps.style, transitionDuration: '0.001s' }
+                                    }
+                                >
+                                    <div className="task__header">
+                                        <input
+                                            className="task__input"
+                                            placeholder="Enter the name of task..."
+                                            value={ title }
+                                            ref={ id === taskIdToFocusOn ? focusedTaskRef : null }
+                                            onChange={ e => {
+                                                const title = e.target.value
+                                                setState( {
+                                                    tasks: tasks.map( ( task, taskIndex ) => index !== taskIndex ? task : { ...task, title } )
+                                                } )
+                                            } }
+                                            onKeyDown={ e => {
+                                                if ( e.keyCode === 13 ) {
+                                                    setState( { activeTaskId: id, lastActiveTaskId: id } )
+                                                    e.target.blur()
+                                                }
+                                            } }
+                                        />
+                                        <i className="task__move-button icon-menu" { ...provided.dragHandleProps }/>
+                                    </div>
+                                    <Timer
+                                        className="task__timer"
+                                        timeString={ formatNumberTime( seconds, timeFormat ) }
+                                        active={ activeTaskId === id }
+                                        canPlay
+                                        canRemove
+                                        onPlay={ () => {
+                                            setState( { activeTaskId: id, lastActiveTaskId: id } )
+                                        } }
+                                        onPause={ () => {
+                                            setState( { activeTaskId: null } )
+                                        } }
+                                        onRemove={ () => {
+                                            setState( {
+                                                activeTaskId: activeTaskId === id ? null : activeTaskId,
+                                                tasks: tasks.filter( ( _, taskIndex ) => index !== taskIndex )
+                                            } )
+                                        } }
+                                        onTimeStringChange={ timeString => {
+                                            setState( {
+                                                tasks: tasks.map( ( task ) => task.id !== id ? task : { ...task, seconds: timeStringToSeconds( timeString ) } )
+                                            } )
+                                        } }
+                                    />
+                                </div>
+                            ) }
+                            </Draggable>
+                        ) ) }
+                            {provided.placeholder}
                     </div>
-                ) ) }
-                </div>
+                ) }
+                </Droppable></DragDropContext></div>
                 <button
                     className="tasks__add-new-task-button"
                     onClick={ addNewTask }

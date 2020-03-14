@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "react": "^16.12.0",
+    "react-beautiful-dnd": "^12.2.0",
     "react-dom": "^16.12.0"
   },
   "devDependencies": {
