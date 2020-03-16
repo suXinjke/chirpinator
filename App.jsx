@@ -280,6 +280,8 @@ function useDarkMode( darkMode ) {
     }, [darkMode] )
 }
 
+const ticker = new Worker( './ticker.js' )
+
 function ChirpinatorApp() {
     const [chirpinatorSettings, setSettings] = usePersistentObjectState( 'chirpinator_settings', {
         maxAppWidth: PAGE_WIDTH.SHORT,
@@ -312,15 +314,14 @@ function ChirpinatorApp() {
             return
         }
 
-        const timeout = setTimeout( () => setState( {
+        const afterTick = () => setState( {
             tasks: tasks.map( ( task ) => task.id !== activeTaskId ? task : { ...task, seconds: task.seconds + 1 } )
-        } ), 1000 )
+        } )
+        ticker.addEventListener( 'message', afterTick )
+        ticker.postMessage( 'startTick' )
 
-        return () => {
-            clearTimeout( timeout )
-        }
+        return () => ticker.removeEventListener( 'message', afterTick )
     }, [chirpinatorTasks] )
-
 
     useEffect( function focusOnTaskIfRequired() {
         if ( !focusedTaskRef.current ) {
