@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "parcel index.html",
-    "build": "parcel build --no-source-maps --public-url \".\" index.html"
+    "build": "parcel build --no-source-maps --public-url \".\" index.html meta-pic.png"
   },
   "keywords": [],
   "author": "suXin",
