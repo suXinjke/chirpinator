@@ -326,7 +326,7 @@ html, body, #app_container, #chirpinator {
     margin: auto;
 
     &__content {
-        flex: 1;
+        flex: 1 0 auto;
         margin: 1rem 0;
     }
 }
