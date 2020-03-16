@@ -290,9 +290,10 @@ function ChirpinatorApp() {
 
         darkMode: false,
         dynamicTitle: true,
-        dynamicTitleTimer: true
+        dynamicTitleTimer: true,
+        dynamicTitleOverallTimer: false
     } )
-    const { maxAppWidth, exportFormat, timeFormat, darkMode, dynamicTitle, dynamicTitleTimer } = chirpinatorSettings
+    const { maxAppWidth, exportFormat, timeFormat, darkMode, dynamicTitle, dynamicTitleTimer, dynamicTitleOverallTimer } = chirpinatorSettings
     useDarkMode( darkMode )
 
     const [chirpinatorTasks, setState, tasksGotCorrupted, clearTasksInLocalStorage] = usePersistentObjectState( 'chirpinator_tasks', {
@@ -397,12 +398,14 @@ function ChirpinatorApp() {
             }
         }
 
-        if ( dynamicTitleTimer && activeTask ) {
+        if ( dynamicTitleOverallTimer ) {
+            titlePortions.unshift( formatNumberTime( totalSeconds, timeFormat ) )
+        } else if ( dynamicTitleTimer && activeTask ) {
             titlePortions.unshift( formatNumberTime( activeTask.seconds, timeFormat ) )
         }
 
         document.title = titlePortions.join( ' - ' )
-    }, [dynamicTitle, dynamicTitleTimer, timeFormat, activeTask] )
+    }, [dynamicTitle, dynamicTitleTimer, dynamicTitleOverallTimer, timeFormat, activeTask] )
 
     const [activePage, setActivePage] = useState( tasksGotCorrupted ? PAGE.CRITICAL_FAILURE : PAGE.CHIRPINATOR )
 
@@ -613,8 +616,20 @@ function ChirpinatorApp() {
                     </div>
                     <div className="setting-row">
                         <label htmlFor="dynamicTitleTimer">Show current task time in the title</label>
-                        <button id="dynamicTitleTimer" onClick={ () => setSettings( { dynamicTitleTimer: !dynamicTitleTimer } ) }>
+                        <button id="dynamicTitleTimer" onClick={ () => setSettings( {
+                            dynamicTitleTimer: !dynamicTitleTimer,
+                            dynamicTitleOverallTimer: false
+                        } ) }>
                             { dynamicTitleTimer ? 'ON' : 'OFF' }
+                        </button>
+                    </div>
+                    <div className="setting-row">
+                        <label htmlFor="dynamicTitleOverallTimer">Show overall time in the title</label>
+                        <button id="dynamicTitleOverallTimer" onClick={ () => setSettings( {
+                            dynamicTitleOverallTimer: !dynamicTitleOverallTimer,
+                            dynamicTitleTimer: false
+                        } ) }>
+                            { dynamicTitleOverallTimer ? 'ON' : 'OFF' }
                         </button>
                     </div>
                     <div className="setting-row">
