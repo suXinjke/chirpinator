@@ -226,7 +226,7 @@ function getExportData( { tasks, timeFormat, exportFormat } ) {
                 tasks: formattedTasks,
                 overall: {
                     seconds: totalSeconds,
-                    totalSeconds: formatNumberTime( totalSeconds, timeFormat )
+                    secondsFormatted: formatNumberTime( totalSeconds, timeFormat )
                 }
             }, null, 2 )
         }
