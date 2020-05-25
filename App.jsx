@@ -405,7 +405,7 @@ function ChirpinatorApp() {
         }
 
         document.title = titlePortions.join( ' - ' )
-    }, [dynamicTitle, dynamicTitleTimer, dynamicTitleOverallTimer, timeFormat, activeTask] )
+    }, [dynamicTitle, dynamicTitleTimer, dynamicTitleOverallTimer, timeFormat, activeTask, tasks] )
 
     const [activePage, setActivePage] = useState( tasksGotCorrupted ? PAGE.CRITICAL_FAILURE : PAGE.CHIRPINATOR )
 
