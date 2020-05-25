@@ -21,7 +21,8 @@ const PAGE = {
 
 const EXPORT_FORMAT = {
     JSON: 'JSON',
-    CSV: 'CSV'
+    CSV: 'CSV',
+    CSV2: 'CSV2'
 }
 
 const PAGE_WIDTH = {
@@ -211,6 +212,12 @@ function getExportData( { tasks, timeFormat, exportFormat } ) {
         case EXPORT_FORMAT.CSV: {
             return tasks.map( ( { title, seconds } ) =>
                 `${title.replace( /\|/g, '' )}|${seconds}|${formatNumberTime( seconds, timeFormat )}`
+            ).join( '\n' )
+        }
+
+        case EXPORT_FORMAT.CSV2: {
+            return tasks.map( ( { title, seconds } ) =>
+                `${title.replace( /\|/g, '' )} | ${formatNumberTime( seconds, timeFormat )}`
             ).join( '\n' )
         }
 
@@ -559,6 +566,12 @@ function ChirpinatorApp() {
                                 onClick={ () => setSettings( { exportFormat: EXPORT_FORMAT.CSV } ) }
                             >
                                 CSV
+                            </div>
+                            <div
+                                className={ `export-dialog__option-button${exportFormat === EXPORT_FORMAT.CSV2 ? ' export-dialog__option-button_active' : ''}` }
+                                onClick={ () => setSettings( { exportFormat: EXPORT_FORMAT.CSV2 } ) }
+                            >
+                                CSV 2
                             </div>
                         </div>
                         <pre
