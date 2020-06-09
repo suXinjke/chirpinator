@@ -114,20 +114,20 @@ const Timer = ( {
     const [editMode, setEditMode] = useState( false )
     const inputRef = useRef( null )
 
-    const startEditing = useCallback( () => {
+    const startEditing = () => {
         if ( onTimeStringChange ) {
             setEditableTimeString( timeString )
             setEditMode( true )
         }
-    }, [onTimeStringChange] )
+    }
 
-    const finishEditiing = useCallback( () => {
+    const finishEditiing = () => {
         if ( onTimeStringChange ) {
             onTimeStringChange( editableTimeString )
         }
 
         setEditMode( false )
-    }, [editableTimeString] )
+    }
 
     useEffect( function handleEscapeHotkey() {
         if ( !editMode ) {
