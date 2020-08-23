@@ -244,6 +244,13 @@ function getExportData( { tasks, timeFormat, exportFormat, onlyStartedTasks } ) 
     }
 }
 
+/**
+ * @function
+ * @template T
+ * @param {string} localStorageKeyName
+ * @param {T} initialState
+ * @returns {[T, (state: Partial<T>) => void], boolean, () => void}
+ */
 function usePersistentObjectState( localStorageKeyName, initialState ) {
     const preservedState = useRef( null )
     const preservedStateWasInvalid = useRef( false )
