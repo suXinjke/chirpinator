@@ -207,7 +207,11 @@ const Timer = ( {
     )
 }
 
-function getExportData( { tasks, timeFormat, exportFormat } ) {
+function getExportData( { tasks, timeFormat, exportFormat, onlyStartedTasks } ) {
+    if ( onlyStartedTasks ) {
+        tasks = tasks.filter( task => task.seconds > 0 )
+    }
+
     switch ( exportFormat ) {
         case EXPORT_FORMAT.CSV: {
             return tasks.map( ( { title, seconds } ) =>
@@ -292,15 +296,26 @@ const ticker = new Worker( './ticker.js' )
 function ChirpinatorApp() {
     const [chirpinatorSettings, setSettings] = usePersistentObjectState( 'chirpinator_settings', {
         maxAppWidth: PAGE_WIDTH.SHORT,
-        exportFormat: EXPORT_FORMAT.JSON,
         timeFormat: TIME_FORMAT.HH_MM_SS,
 
         darkMode: false,
         dynamicTitle: true,
         dynamicTitleTimer: true,
-        dynamicTitleOverallTimer: false
+        dynamicTitleOverallTimer: false,
+
+        exportFormat: EXPORT_FORMAT.JSON,
+        exportShowOnlyStartedTasks: false
     } )
-    const { maxAppWidth, exportFormat, timeFormat, darkMode, dynamicTitle, dynamicTitleTimer, dynamicTitleOverallTimer } = chirpinatorSettings
+    const {
+        maxAppWidth,
+        exportFormat,
+        timeFormat,
+        darkMode,
+        dynamicTitle,
+        dynamicTitleTimer,
+        dynamicTitleOverallTimer,
+        exportShowOnlyStartedTasks,
+    } = chirpinatorSettings
     useDarkMode( darkMode )
 
     const [chirpinatorTasks, setState, tasksGotCorrupted, clearTasksInLocalStorage] = usePersistentObjectState( 'chirpinator_tasks', {
@@ -553,6 +568,12 @@ function ChirpinatorApp() {
         { activePage === PAGE.EXPORT &&
             <div className="export page">
                 <div className="export__content">
+                    <div className="setting-row">
+                        <label htmlFor="exportShowOnlyStartedTasks">Tasks with no time spent on</label>
+                        <button id="exportShowOnlyStartedTasks" onClick={ () => setSettings( { exportShowOnlyStartedTasks: !exportShowOnlyStartedTasks } ) }>
+                            { exportShowOnlyStartedTasks ? 'HIDDEN' : 'SHOWN' }
+                        </button>
+                    </div>
                     <div className="export-dialog">
                         <div className="export-dialog__options">
                             <div
@@ -586,7 +607,12 @@ function ChirpinatorApp() {
                                 selection.addRange( range )
                             } }
                         >
-                            { getExportData( { tasks, timeFormat, exportFormat } ) }
+                            { getExportData( {
+                                tasks,
+                                timeFormat,
+                                exportFormat,
+                                onlyStartedTasks: exportShowOnlyStartedTasks
+                            } ) }
                         </pre>
                     </div>
                 </div>
