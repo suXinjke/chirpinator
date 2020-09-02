@@ -273,12 +273,18 @@ function usePersistentObjectState( localStorageKeyName, initialState ) {
     const [state, setState] = useState( preservedStateWasInvalid.current || !preservedState.current ? initialState : preservedState.current )
 
     const setPersistedState = useCallback( newState => {
-        const updatedState = {
-            ...state,
-            ...newState
+        if ( typeof newState === 'function' ) {
+            setState( newState )
+        } else {
+            setState( prev => ( {
+                ...prev,
+                ...newState
+            } ) )
         }
-        setState( updatedState )
-        localStorage.setItem( localStorageKeyName, JSON.stringify( updatedState ) )
+    }, [state] )
+
+    useEffect( () => {
+        localStorage.setItem( localStorageKeyName, JSON.stringify( state ) )
     }, [state] )
 
     const clearState = useCallback( () => {
@@ -297,8 +303,6 @@ function useDarkMode( darkMode ) {
         }
     }, [darkMode] )
 }
-
-const ticker = new Worker( './ticker.js' )
 
 function ChirpinatorApp() {
     const [chirpinatorSettings, setSettings] = usePersistentObjectState( 'chirpinator_settings', {
@@ -339,19 +343,46 @@ function ChirpinatorApp() {
     const focusedTaskRef = useRef( null )
     const exportContentRef = useRef( null )
 
-    useEffect( function nextFrame() {
-        if ( activeTaskId === null ) {
-            return
+    const accumulatedTime = useRef( 0 )
+    const lastDeltaTime = useRef( 0 )
+
+    useEffect( function ticker() {
+        function requestTick( delta ) {
+            const diff = delta - lastDeltaTime.current
+
+            accumulatedTime.current += diff
+            lastDeltaTime.current = delta
+
+            requestAnimationFrame( requestTick )
+        }
+        requestAnimationFrame( requestTick )
+    }, [] )
+
+    useEffect( () => {
+        function addTimeToActiveTask() {
+            const capturedTime = accumulatedTime.current
+            if ( activeTaskId ) {
+                setState( prev => ( {
+                    ...prev,
+                    tasks: prev.tasks.map( ( task ) => task.id !== activeTaskId ? task : {
+                        ...task,
+                        seconds: task.seconds + capturedTime / 1000
+                    } )
+                } ) )
+            }
+
+            accumulatedTime.current = 0
         }
 
-        const afterTick = () => setState( {
-            tasks: tasks.map( ( task ) => task.id !== activeTaskId ? task : { ...task, seconds: task.seconds + 1 } )
-        } )
-        ticker.addEventListener( 'message', afterTick )
-        ticker.postMessage( 'startTick' )
+        const handle = setInterval( () => {
+            addTimeToActiveTask()
+        }, 1000 )
 
-        return () => ticker.removeEventListener( 'message', afterTick )
-    }, [chirpinatorTasks] )
+        return () => {
+            addTimeToActiveTask()
+            clearInterval( handle )
+        }
+    }, [activeTaskId] )
 
     useEffect( function focusOnTaskIfRequired() {
         if ( !focusedTaskRef.current ) {
